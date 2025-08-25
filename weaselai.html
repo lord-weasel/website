@@ -39,7 +39,7 @@
     .chat-input { width: calc(100% - 22px); padding: 10px; border: 2px solid #00FF00; background-color: #CC0099; color: #FFFF99; font-size: 16px; font-family: "Papyrus", fantasy; }
     .chat-input::placeholder { color: #FFFF99; font-family: "Papyrus", fantasy; }
     .chat-send { padding: 10px 20px; font-size: 16px; background-color: #990066; color: #FFFF00; border: 2px solid #00FF00; cursor: pointer; font-family: "Papyrus", fantasy; }
-    .weasel-response { color: #FFCC33; font-weight: bold; }
+    .weasel-response { color: #FFCC33; font-weight: bold; margin-top: 5px; }
   </style>
 </head>
 <body>
@@ -65,7 +65,7 @@
   </div>
 
   <script>
-    const HF_KEY = "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";
+    const WORKER_URL = "https://weaselai.z8wj25zw7n.workers.dev/";
     let messages = [{ role: "system", content: "You are a helpful assistant named Weasel AI." }];
 
     async function sendMessage() {
@@ -84,16 +84,10 @@
       chatWindow.appendChild(typingDiv);
 
       try {
-        const response = await fetch("https://api-inference.huggingface.co/v1/chat/completions", {
+        const response = await fetch(WORKER_URL, {
           method: "POST",
-          headers: {
-            "Authorization": `Bearer ${HF_KEY}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            model: "deepseek-ai/DeepSeek-V3-0324:together",
-            messages: messages
-          })
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ model: "deepseek-ai/DeepSeek-V3-0324:together", messages })
         });
 
         const data = await response.json();
