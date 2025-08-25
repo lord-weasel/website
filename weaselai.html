@@ -16,7 +16,6 @@
       50%  { color: purple; }
       100% { color: yellow; }
     }
-    /* Style for the top bar */
     #topBar {
       width: 80%;
       margin: auto;
@@ -35,12 +34,7 @@
     #topBar a:hover {
       animation: flash 0.3s infinite;
     }
-    /* Weasel AI box (non-link) */
-    .weasel-ai-box {
-      color: #FFFF00;
-      font-weight: bold;
-    }
-    /* Chat Styles */
+    .weasel-ai-box { color: #FFFF00; font-weight: bold; }
     .chat-container {
       max-width: 800px;
       margin: 20px auto;
@@ -48,12 +42,7 @@
       background-color: #000099;
       padding: 10px;
     }
-    .chat-header {
-      text-align: center;
-      font-size: 24px;
-      color: #FF0000;
-      margin-bottom: 10px;
-    }
+    .chat-header { text-align: center; font-size: 24px; color: #FF0000; margin-bottom: 10px; }
     .chat-window {
       height: 400px;
       overflow-y: auto;
@@ -74,10 +63,7 @@
       font-size: 16px;
       font-family: "Papyrus", fantasy;
     }
-    .chat-input::placeholder {
-      color: #FFFF99;
-      font-family: "Papyrus", fantasy;
-    }
+    .chat-input::placeholder { color: #FFFF99; font-family: "Papyrus", fantasy; }
     .chat-send {
       padding: 10px 20px;
       font-size: 16px;
@@ -87,10 +73,7 @@
       cursor: pointer;
       font-family: "Papyrus", fantasy;
     }
-    .weasel-response {
-      color: #FFCC33;
-      font-weight: bold;
-    }
+    .weasel-response { color: #FFCC33; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -115,12 +98,8 @@
   </center>
 
   <div class="chat-container">
-    <div class="chat-header">
-      Weasel AI
-    </div>
-    <div class="chat-window" id="chat-window">
-      <!-- Chat messages will appear here -->
-    </div>
+    <div class="chat-header">Weasel AI</div>
+    <div class="chat-window" id="chat-window"></div>
     <div style="display: flex; align-items: center;">
       <input type="text" class="chat-input" id="chat-input" placeholder="Type your message here..." onkeydown="checkEnter(event)">
       <button class="chat-send" onclick="sendMessage()">Send</button>
@@ -128,79 +107,59 @@
   </div>
 
   <script>
-    let messages = [
-      { role: "system", content: "You are a helpful assistant named Weasel AI." }
-    ];
+    let messages = [{ role: "system", content: "You are a helpful assistant named Weasel AI." }];
 
     async function sendMessage() {
       const input = document.getElementById('chat-input');
       const chatWindow = document.getElementById('chat-window');
       const message = input.value.trim();
+      if (!message) return;
 
-      if (message !== "") {
-        // Show user message
-        const userMsgDiv = document.createElement('div');
-        userMsgDiv.textContent = "You: " + message;
-        chatWindow.appendChild(userMsgDiv);
+      // Add user message
+      messages.push({ role: "user", content: message });
+      chatWindow.innerHTML += `<div>You: ${message}</div>`;
+      input.value = "";
+      chatWindow.scrollTop = chatWindow.scrollHeight;
 
-        // Add to conversation history
-        messages.push({ role: "user", content: message });
+      // Show typing animation
+      const typingDiv = document.createElement('div');
+      typingDiv.textContent = "Weasel AI is thinking...";
+      chatWindow.appendChild(typingDiv);
+      let dots = 0;
+      let typingInterval = setInterval(() => {
+        dots = (dots + 1) % 4;
+        typingDiv.textContent = "Weasel AI is thinking" + ".".repeat(dots);
+      }, 500);
 
-        input.value = "";
+      try {
+        const response = await fetch("https://weaselai.z8wj25zw7n.workers.dev/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: "deepseek-ai/DeepSeek-V3-0324:together",
+            messages: messages
+          })
+        });
+
+        const data = await response.json();
+        const botReply = data.choices[0].message.content;
+
+        clearInterval(typingInterval);
+        typingDiv.remove();
+
+        chatWindow.innerHTML += `<div class="weasel-response">Weasel AI: ${botReply}</div>`;
         chatWindow.scrollTop = chatWindow.scrollHeight;
 
-        // Show "thinking..."
-        const typingDiv = document.createElement('div');
-        typingDiv.textContent = "Weasel AI is thinking";
-        chatWindow.appendChild(typingDiv);
-
-        let dots = 0;
-        let typingInterval = setInterval(() => {
-          dots = (dots + 1) % 4;
-          typingDiv.textContent = "Weasel AI is thinking" + ".".repeat(dots);
-        }, 500);
-
-        try {
-          // Call Hugging Face API
-          const response = await fetch("https://weaselai.z8wj25zw7n.workers.dev/", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    model: "deepseek-ai/DeepSeek-V3-0324:together",
-    messages: messages
-  })
-});
-          const data = await response.json();
-          const botReply = data.choices[0].message.content;
-
-          clearInterval(typingInterval);
-          chatWindow.removeChild(typingDiv);
-
-          const aiMsgDiv = document.createElement('div');
-          aiMsgDiv.textContent = "Weasel AI: " + botReply;
-          aiMsgDiv.classList.add("weasel-response");
-          chatWindow.appendChild(aiMsgDiv);
-
-          // Add to history
-          messages.push({ role: "assistant", content: botReply });
-
-          chatWindow.scrollTop = chatWindow.scrollHeight;
-        } catch (error) {
-          clearInterval(typingInterval);
-          chatWindow.removeChild(typingDiv);
-
-          const errMsgDiv = document.createElement('div');
-          errMsgDiv.textContent = "Weasel AI: (error connecting to model)";
-          errMsgDiv.style.color = "red";
-          chatWindow.appendChild(errMsgDiv);
-        }
+        messages.push({ role: "assistant", content: botReply });
+      } catch (err) {
+        clearInterval(typingInterval);
+        typingDiv.remove();
+        chatWindow.innerHTML += `<div style="color:red">Weasel AI: (error connecting)</div>`;
       }
     }
 
     function checkEnter(event) {
-      if (event.key === "Enter") {
-        sendMessage();
-      }
+      if (event.key === "Enter") sendMessage();
     }
   </script>
 
