@@ -1,58 +1,167 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Weasel AI Chatbot</title>
+  <meta charset="UTF-8">
+  <title>Weasel AI</title>
   <style>
-    body { font-family: "Comic Sans MS", cursive; background: #000066; color: #FFFFFF; margin:0; padding:20px;}
-    #chat { border:2px solid #FF00FF; padding:10px; max-height:400px; overflow-y:auto; background:#000099; color:#FFFF99; }
-    input { width:70%; padding:10px; margin-top:10px; border:2px solid #00FF00; background:#CC0099; color:#FFFF99; font-family:"Papyrus", fantasy; }
-    button { padding:10px 20px; margin-left:10px; border:2px solid #00FF00; background:#990066; color:#FFFF00; cursor:pointer; font-family:"Papyrus", fantasy; }
-    .weasel-response { color:#FFCC33; font-weight:bold; margin-top:5px; }
-    .user-message { color:#FFFF00; margin-top:5px; }
+    body {
+      background-color: #000066;
+      color: #FFFFFF;
+      font-family: "Comic Sans MS", cursive;
+      margin: 0;
+      padding: 0;
+    }
+    @keyframes flash {
+      0%   { color: yellow; }
+      50%  { color: purple; }
+      100% { color: yellow; }
+    }
+    /* Top bar styling */
+    #topBar {
+      width: 80%;
+      margin: auto;
+      border: 2px solid #FFFFFF;
+    }
+    #topBar td {
+      text-align: center;
+      padding: 5px;
+      font-size: 18px;
+    }
+    #topBar a {
+      display: inline-block;
+      color: yellow;
+      text-decoration: underline;
+    }
+    #topBar a:hover {
+      animation: flash 0.3s infinite;
+    }
+    .weasel-ai-box {
+      color: #FFFF00;
+      font-weight: bold;
+    }
+    /* Chat container */
+    .chat-container {
+      max-width: 800px;
+      margin: 20px auto;
+      border: 2px solid #FF00FF;
+      background-color: #000099;
+      padding: 10px;
+    }
+    .chat-header {
+      text-align: center;
+      font-size: 24px;
+      color: #FF0000;
+      margin-bottom: 10px;
+    }
+    .chat-window {
+      height: 400px;
+      overflow-y: auto;
+      background-color: #CC0099;
+      color: #FFFF99;
+      padding: 10px;
+      border: 2px solid #00FF00;
+      margin-bottom: 10px;
+      font-family: "Comic Sans MS", cursive;
+      line-height: 1.6;
+    }
+    .chat-input {
+      width: calc(100% - 22px);
+      padding: 10px;
+      border: 2px solid #00FF00;
+      background-color: #CC0099;
+      color: #FFFF99;
+      font-size: 16px;
+      font-family: "Papyrus", fantasy;
+    }
+    .chat-input::placeholder {
+      color: #FFFF99;
+      font-family: "Papyrus", fantasy;
+    }
+    .chat-send {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #990066;
+      color: #FFFF00;
+      border: 2px solid #00FF00;
+      cursor: pointer;
+      font-family: "Papyrus", fantasy;
+    }
+    .weasel-response {
+      color: #FFCC33;
+      font-weight: bold;
+      margin-top: 5px;
+    }
+    .user-message {
+      color: #FFFF00;
+      margin-top: 5px;
+    }
   </style>
 </head>
 <body>
-  <h1>Weasel AI</h1>
-  <div id="chat"></div>
-  <div style="display:flex; align-items:center;">
-    <input type="text" id="userInput" placeholder="Type a message..."/>
-    <button onclick="sendMessage()">Send</button>
+
+  <center>
+    <table id="topBar" bgcolor="#000099" border="2" cellspacing="0" cellpadding="4">
+      <tr>
+        <td align="center" bgcolor="#660099" width="20%">
+          <a href="index.html"><b>[HOME]</b></a>
+        </td>
+        <td align="center" bgcolor="#660099" width="20%">
+          <a href="fav-website.html"><b>[FAV WEBSITE]</b></a>
+        </td>
+        <td align="center" bgcolor="#990099" width="20%">
+          <a href="art.html"><b>[ART]</b></a>
+        </td>
+        <td align="center" bgcolor="#990099" width="20%">
+          <span class="weasel-ai-box">[WEASEL AI]</span>
+        </td>
+      </tr>
+    </table>
+  </center>
+
+  <div class="chat-container">
+    <div class="chat-header">Weasel AI</div>
+    <div class="chat-window" id="chat-window"></div>
+    <div style="display: flex; align-items: center;">
+      <input type="text" class="chat-input" id="chat-input" placeholder="Type your message here..." onkeydown="checkEnter(event)">
+      <button class="chat-send" onclick="sendMessage()">Send</button>
+    </div>
   </div>
 
   <script>
     const WORKER_URL = "https://weaselai.z8wj25zw7n.workers.dev";
 
-    async function sendMessage() {
-      const input = document.getElementById("userInput");
-      const chat = document.getElementById("chat");
-      const text = input.value.trim();
-      if (!text) return;
-      
-      // show user message
-      const userDiv = document.createElement("div");
-      userDiv.textContent = "You: " + text;
-      userDiv.classList.add("user-message");
-      chat.appendChild(userDiv);
-      input.value = "";
-      chat.scrollTop = chat.scrollHeight;
+    function appendMessage(text, className) {
+      const chatWindow = document.getElementById('chat-window');
+      const div = document.createElement('div');
+      div.textContent = text;
+      div.className = className;
+      chatWindow.appendChild(div);
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
 
-      // typing indicator
-      const typingDiv = document.createElement("div");
+    async function sendMessage() {
+      const input = document.getElementById('chat-input');
+      const message = input.value.trim();
+      if (!message) return;
+
+      appendMessage("You: " + message, "user-message");
+      input.value = "";
+
+      const typingDiv = document.createElement('div');
       typingDiv.textContent = "Weasel AI is thinking...";
-      chat.appendChild(typingDiv);
-      chat.scrollTop = chat.scrollHeight;
+      typingDiv.className = "weasel-response";
+      document.getElementById('chat-window').appendChild(typingDiv);
+      document.getElementById('chat-window').scrollTop = document.getElementById('chat-window').scrollHeight;
 
       try {
         const res = await fetch(WORKER_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ inputs: text })
+          body: JSON.stringify({ inputs: message })
         });
 
         const data = await res.json();
-        chat.removeChild(typingDiv);
+        typingDiv.remove();
 
         let reply = "No response";
         if (Array.isArray(data) && data[0]?.generated_text) {
@@ -65,19 +174,17 @@
           reply = JSON.stringify(data);
         }
 
-        const aiDiv = document.createElement("div");
-        aiDiv.textContent = "Weasel AI: " + reply;
-        aiDiv.classList.add("weasel-response");
-        chat.appendChild(aiDiv);
-        chat.scrollTop = chat.scrollHeight;
+        appendMessage("Weasel AI: " + reply, "weasel-response");
+
       } catch (err) {
         typingDiv.textContent = "Error: " + err.message;
       }
     }
 
-    document.getElementById("userInput").addEventListener("keydown", function(e) {
-      if (e.key === "Enter") sendMessage();
-    });
+    function checkEnter(event) {
+      if (event.key === "Enter") sendMessage();
+    }
   </script>
+
 </body>
 </html>
