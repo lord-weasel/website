@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Weasel AI</title>
+  <style>
+    body { background-color:#000066; color:#FFFFFF; font-family:"Comic Sans MS",cursive; margin:0; padding:0; }
+    @keyframes flash { 0%{color:yellow}50%{color:purple}100%{color:yellow} }
+    #topBar { width:80%; margin:auto; border:2px solid #FFFFFF; }
+    #topBar td { text-align:center; padding:5px; font-size:18px; }
+    #topBar a { display:inline-block; color:yellow; text-decoration:underline; }
+    #topBar a:hover { animation:flash 0.3s infinite; }
+    .weasel-ai-box { color:#FFFF00; font-weight:bold; }
+    .chat-container { max-width:800px; margin:20px auto; border:2px solid #FF00FF; background:#000099; padding:10px; }
+    .chat-header { text-align:center; font-size:24px; color:#FF0000; margin-bottom:10px; }
+    .chat-window { height:400px; overflow-y:auto; background:#CC0099; color:#FFFF99; padding:10px; border:2px solid #00FF00; margin-bottom:10px; font-family:"Comic Sans MS",cursive; line-height:1.6; }
+    .chat-input { width:calc(100% - 22px); padding:10px; border:2px solid #00FF00; background:#CC0099; color:#FFFF99; font-size:16px; font-family:"Papyrus",fantasy; }
+    .chat-send { padding:10px 20px; font-size:16px; background:#990066; color:#FFFF00; border:2px solid #00FF00; cursor:pointer; font-family:"Papyrus",fantasy; }
+    .weasel-response { color:#FFCC33; font-weight:bold; margin-top:5px; white-space:pre-wrap; }
+    .user-message { color:#FFFF00; margin-top:5px; white-space:pre-wrap; }
+    .error { color: #ff6666; font-weight: bold; margin-top:5px; }
+  </style>
+</head>
+<body>
+
+  <center>
+    <table id="topBar" bgcolor="#000099" border="2" cellspacing="0" cellpadding="4">
+      <tr>
+        <td align="center" bgcolor="#660099" width="20%"><a href="index.html"><b>[HOME]</b></a></td>
+        <td align="center" bgcolor="#660099" width="20%"><a href="fav-website.html"><b>[FAV WEBSITE]</b></a></td>
+        <td align="center" bgcolor="#990099" width="20%"><a href="art.html"><b>[ART]</b></a></td>
+        <td align="center" bgcolor="#990099" width="20%"><span class="weasel-ai-box">[WEASEL AI]</span></td>
+      </tr>
+    </table>
+  </center>
+
+  <div class="chat-container">
+    <div class="chat-header">Weasel AI</div>
+    <div class="chat-window" id="chat-window"></div>
+    <div style="display:flex; align-items:center;">
+      <input type="text" class="chat-input" id="chat-input" placeholder="Type your message here..." onkeydown="checkEnter(event)">
+      <button class="chat-send" onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    const WORKER_URL = "https://weaselai.z8wj25zw7n.workers.dev"; // your worker
+
+    function append(text, cls) {
+      const w = document.getElementById('chat-window');
+      const d = document.createElement('div');
+      d.textContent = text;
+      d.className = cls;
+      w.appendChild(d);
+      w.scrollTop = w.scrollHeight;
+      return d;
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('chat-input');
+      const message = input.value.trim();
+      if (!message) return;
+      append("You: " + message, "user-message");
+      input.value = "";
+
+      const typing = append("Weasel AI is thinking...", "weasel-response");
+
+      try {
+        const res = await fetch(WORKER_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ inputs: message })
+        });
+
+        // parse JSON safely
+        let json;
+        try {
+          json = await res.json();
+        } catch (e) {
+          // not JSON (shouldn't happen with new worker), fall back to text
+          const txt = await res.text();
+          typing.remove();
+          append("Weasel AI: (non-JSON response) " + txt, "weasel-response");
+          return;
+        }
+
+        typing.remove();
+
+        // worker returns { hf_status: <status>, hf: <parsed or {_raw_text: "..."}> }
+        if (json.hf_status && json.hf_status >= 400) {
+          const body = json.hf && json.hf._raw_text ? json.hf._raw_text : JSON.stringify(json.hf);
+          append("Error from Hugging Face (HTTP " + json.hf_status + "): " + body, "error");
+          return;
+        }
+
+        // Normal success path:
+        const hf = json.hf;
+        let reply = "";
+
+        if (Array.isArray(hf) && hf[0]?.generated_text) {
+          reply = hf[0].generated_text;
+        } else if (hf.generated_text) {
+          reply = hf.generated_text;
+        } else if (hf._raw_text) {
+          reply = hf._raw_text;
+        } else {
+          reply = JSON.stringify(hf);
+        }
+
+        append("Weasel AI: " + reply, "weasel-response");
+
+      } catch (err) {
+        typing.textContent = "Error: " + err.message;
+        typing.className = "error";
+      }
+    }
+
+    function checkEnter(e) { if (e.key === "Enter") sendMessage(); }
+  </script>
+
+</body>
+</html>
