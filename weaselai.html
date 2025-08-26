@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Weasel AI Chatbot</title>
+  <style>
+    body { font-family: "Comic Sans MS", cursive; background: #000066; color: #FFFFFF; margin:0; padding:20px;}
+    #chat { border:2px solid #FF00FF; padding:10px; max-height:400px; overflow-y:auto; background:#000099; color:#FFFF99; }
+    input { width:70%; padding:10px; margin-top:10px; border:2px solid #00FF00; background:#CC0099; color:#FFFF99; font-family:"Papyrus", fantasy; }
+    button { padding:10px 20px; margin-left:10px; border:2px solid #00FF00; background:#990066; color:#FFFF00; cursor:pointer; font-family:"Papyrus", fantasy; }
+    .weasel-response { color:#FFCC33; font-weight:bold; margin-top:5px; }
+    .user-message { color:#FFFF00; margin-top:5px; }
+  </style>
+</head>
+<body>
+  <h1>Weasel AI</h1>
+  <div id="chat"></div>
+  <div style="display:flex; align-items:center;">
+    <input type="text" id="userInput" placeholder="Type a message..."/>
+    <button onclick="sendMessage()">Send</button>
+  </div>
+
+  <script>
+    const WORKER_URL = "https://weaselai.z8wj25zw7n.workers.dev";
+
+    async function sendMessage() {
+      const input = document.getElementById("userInput");
+      const chat = document.getElementById("chat");
+      const text = input.value.trim();
+      if (!text) return;
+      
+      // show user message
+      const userDiv = document.createElement("div");
+      userDiv.textContent = "You: " + text;
+      userDiv.classList.add("user-message");
+      chat.appendChild(userDiv);
+      input.value = "";
+      chat.scrollTop = chat.scrollHeight;
+
+      // typing indicator
+      const typingDiv = document.createElement("div");
+      typingDiv.textContent = "Weasel AI is thinking...";
+      chat.appendChild(typingDiv);
+      chat.scrollTop = chat.scrollHeight;
+
+      try {
+        const res = await fetch(WORKER_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ inputs: text })
+        });
+
+        const data = await res.json();
+        chat.removeChild(typingDiv);
+
+        let reply = "No response";
+        if (Array.isArray(data) && data[0]?.generated_text) {
+          reply = data[0].generated_text;
+        } else if (data.generated_text) {
+          reply = data.generated_text;
+        } else if (data.error) {
+          reply = "Error: " + data.error;
+        } else {
+          reply = JSON.stringify(data);
+        }
+
+        const aiDiv = document.createElement("div");
+        aiDiv.textContent = "Weasel AI: " + reply;
+        aiDiv.classList.add("weasel-response");
+        chat.appendChild(aiDiv);
+        chat.scrollTop = chat.scrollHeight;
+      } catch (err) {
+        typingDiv.textContent = "Error: " + err.message;
+      }
+    }
+
+    document.getElementById("userInput").addEventListener("keydown", function(e) {
+      if (e.key === "Enter") sendMessage();
+    });
+  </script>
+</body>
+</html>
