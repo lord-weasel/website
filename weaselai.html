@@ -125,7 +125,7 @@
   </div>
 
   <script>
-    const API_URL = "https://weaselai.z8wj25zw7n.workers.dev"; // replace with your Worker URL
+    const API_URL = "https://weaselai.z8wj25zw7n.workers.dev"; // your Worker URL
 
     async function sendMessage() {
       var input = document.getElementById('chat-input');
@@ -157,14 +157,16 @@
           const data = await res.json();
           chatWindow.removeChild(typingDiv);
 
-          // Hugging Face sometimes returns an array with generated_text
-          let aiResponse = "Error getting response";
+          // Handle Hugging Face response
+          let aiResponse = "No response";
           if (Array.isArray(data) && data[0]?.generated_text) {
             aiResponse = data[0].generated_text;
           } else if (data.generated_text) {
             aiResponse = data.generated_text;
           } else if (data.error) {
-            aiResponse = "Error: " + data.error;
+            aiResponse = "Error from Hugging Face: " + data.error;
+          } else {
+            aiResponse = JSON.stringify(data);
           }
 
           // Show AI response
