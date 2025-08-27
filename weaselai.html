@@ -44,7 +44,7 @@
   </div>
 
   <script>
-    const WORKER_URL = "https://weaselai.z8wj25zw7n.workers.dev"; // your worker
+    const WORKER_URL = "https://weaselai.z8wj25zw7n.workers.dev"; // your Worker URL
 
     function append(text, cls) {
       const w = document.getElementById('chat-window');
@@ -69,42 +69,24 @@
         const res = await fetch(WORKER_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ inputs: message })
+          body: JSON.stringify({
+            messages: [{ role: "user", content: message }]
+          })
         });
 
-        // parse JSON safely
-        let json;
-        try {
-          json = await res.json();
-        } catch (e) {
-          // not JSON (shouldn't happen with new worker), fall back to text
-          const txt = await res.text();
-          typing.remove();
-          append("Weasel AI: (non-JSON response) " + txt, "weasel-response");
-          return;
-        }
-
+        const json = await res.json();
         typing.remove();
 
-        // worker returns { hf_status: <status>, hf: <parsed or {_raw_text: "..."}> }
-        if (json.hf_status && json.hf_status >= 400) {
-          const body = json.hf && json.hf._raw_text ? json.hf._raw_text : JSON.stringify(json.hf);
-          append("Error from Hugging Face (HTTP " + json.hf_status + "): " + body, "error");
+        if (json.error) {
+          append("Error: " + json.error, "error");
           return;
         }
 
-        // Normal success path:
-        const hf = json.hf;
         let reply = "";
-
-        if (Array.isArray(hf) && hf[0]?.generated_text) {
-          reply = hf[0].generated_text;
-        } else if (hf.generated_text) {
-          reply = hf.generated_text;
-        } else if (hf._raw_text) {
-          reply = hf._raw_text;
+        if (json.choices && json.choices.length > 0) {
+          reply = json.choices[0].message.content;
         } else {
-          reply = JSON.stringify(hf);
+          reply = JSON.stringify(json);
         }
 
         append("Weasel AI: " + reply, "weasel-response");
