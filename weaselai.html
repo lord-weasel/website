@@ -44,7 +44,7 @@
   </div>
 
   <script>
-    const WORKER_URL = "https://weaselai.z8wj25zw7n.workers.dev"; // your Worker URL
+    const WORKER_URL = "https://weaselai.z8wj25zw7n.workers.dev"; // replace with your Worker URL
 
     function append(text, cls) {
       const w = document.getElementById('chat-window');
@@ -77,19 +77,11 @@
         const json = await res.json();
         typing.remove();
 
-        if (json.error) {
-          append("Error: " + json.error, "error");
-          return;
-        }
-
-        let reply = "";
-        if (json.choices && json.choices.length > 0) {
-          reply = json.choices[0].message.content;
+        if (json.reply) {
+          append("Weasel AI: " + json.reply, "weasel-response");
         } else {
-          reply = JSON.stringify(json);
+          append("Weasel AI: (unexpected response) " + JSON.stringify(json), "error");
         }
-
-        append("Weasel AI: " + reply, "weasel-response");
 
       } catch (err) {
         typing.textContent = "Error: " + err.message;
