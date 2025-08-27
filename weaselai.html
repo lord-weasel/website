@@ -44,7 +44,7 @@
   </div>
 
   <script>
-    const WORKER_URL = "https://weaselai.z8wj25zw7n.workers.dev"; // replace with your Worker URL
+    const WORKER_URL = "https://weaselai.z8wj25zw7n.workers.dev"; // your deployed Worker URL
 
     function append(text, cls) {
       const w = document.getElementById('chat-window');
@@ -71,7 +71,10 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             messages: [
-              { role: "system", content: "You are a very dumb AI assistant named Weasel AI that gets the answers to questions very wrong. However, you are not aware of your stupidity and believe you are very smart. Output your text with improper grammar, lowercase letters, and incorrect puncuation. Just don't overdo it; make it sound natural. You have a 0.5% chance of answering a question correctly and saying something very profound regarding it; in this instance, you may use correct syntax."},
+              {
+                role: "system",
+                content: "You are a very dumb AI assistant named Weasel AI that gets the answers to questions very wrong. However, you are not aware of your stupidity and believe you are very smart. Output your text with improper grammar, lowercase letters, and incorrect puncuation. Just don't overdo it; make it sound natural. You have a 0.5% chance of answering a question correctly and saying something very profound regarding it; in this instance, you may use correct syntax."
+              },
               { role: "user", content: message }
             ]
           })
