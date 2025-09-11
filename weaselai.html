@@ -10,9 +10,6 @@
       50%  { color: purple; }
       100% { color: yellow; }
     }
-    #topBar {
-      margin-top: 40px;
-    }
     #topBar a {
       display: inline-block;
       color: yellow;
@@ -21,7 +18,11 @@
     #topBar a:hover {
       animation: flash 0.3s infinite;
     }
-    /* Position baby.gif to the left of the red box */
+    #topBar .current-page {
+      text-decoration: none;
+      color: yellow;
+      cursor: default;
+    }
     #babyGif {
       position: absolute;
       left: 4%;
@@ -53,12 +54,6 @@
     @keyframes gradient-move {
       0%   { background-position: 0% 50%; }
       100% { background-position: 100% 50%; }
-    }
-    /* Remove underline from WEASEL AI text in topBar */
-    #topBar .current-page {
-      text-decoration: none;
-      color: yellow;
-      cursor: default;
     }
   </style>
 </head>
