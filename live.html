@@ -8,46 +8,103 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
   <style>
-    body {
-      background-color: black;
-      color: yellow;
-      font-family: 'Comic Sans MS', cursive, sans-serif;
-      text-align: center;
-    }
-    h1 {
-      animation: flash 0.4s infinite;
-    }
     @keyframes flash {
       0%   { color: yellow; }
       50%  { color: purple; }
       100% { color: yellow; }
     }
+    #topBar a {
+      display: inline-block;
+      color: yellow;
+      text-decoration: underline;
+    }
+    #topBar a:hover {
+      animation: flash 0.3s infinite;
+    }
+    #topBar .current-page {
+      text-decoration: none;
+      color: yellow;
+      cursor: default;
+    }
+    body {
+      background-color:#000066;
+      color:#FFFFFF;
+      font-family:'Comic Sans MS', cursive, sans-serif;
+      margin:8px;
+      padding:0;
+    }
     .decor {
       margin: 10px;
       height: 40px;
     }
-    iframe {
-      border: 5px dashed purple;
-      background-color: #222;
+    .live-container {
+      max-width: 800px;
+      margin: 20px auto;
+      border: 2px solid #FF00FF;
+      background: #000099;
+      padding: 10px;
+      text-align: center;
+    }
+    .live-header {
+      text-align: center;
+      font-size: 24px;
+      color: #FF0000;
+      margin-bottom: 10px;
+    }
+    .live-frame {
+      width: 100%;
+      height: 480px;
+      border: 2px solid #00FF00;
+      background: #CC0099;
     }
   </style>
 </head>
-<body>
-  <img src="sparkle.gif" class="decor" alt="sparkle">
-  <h1>✨ Wesley's Room Live Cam ✨</h1>
-  <img src="sparkle.gif" class="decor" alt="sparkle"><br>
+<body bgcolor="#000066" text="#FFFFFF" link="#00FF00" vlink="#FF00FF" alink="#FFFF00">
 
-  <iframe 
-    src="https://vdo.ninja/?view=83UcYqA&cleanoutput&autostart&mute" 
-    width="90%" 
-    height="600" 
-    frameborder="0" 
-    allow="camera; microphone; autoplay" 
-    allowfullscreen>
-  </iframe>
+  <center>
+    <table id="topBar" width="80%" bgcolor="#000099" border="2" cellspacing="0" cellpadding="4">
+      <tr>
+        <td align="center" bgcolor="#990099" width="20%">
+          <font color="#FFFF00" size="3" face="Comic Sans MS">
+            <a href="index.html"><b>[HOME]</b></a>
+          </font>
+        </td>
+        <td align="center" bgcolor="#660099" width="20%">
+          <font color="#00FF00" size="3" face="Comic Sans MS">
+            <a href="https://www.jw.org/en/"><b>[FAV WEBSITE]</b></a>
+          </font>
+        </td>
+        <td align="center" bgcolor="#990099" width="20%">
+          <font color="#FFFF00" size="3" face="Comic Sans MS">
+            <span class="current-page"><b>[LIVE]</b></span>
+          </font>
+        </td>
+        <td align="center" bgcolor="#660099" width="20%">
+          <font color="#00FF00" size="3" face="Comic Sans MS">
+            <a href="weaselai.html"><b>[WEASEL AI]</b></a>
+          </font>
+        </td>
+      </tr>
+    </table>
+  </center>
 
-  <br><br>
-  <br>
-  <img src="BLUELINE.gif" class="decor" alt="divider">
+  <div class="live-container">
+    <div class="live-header">✨ Wesley's Room Live Cam ✨</div>
+    <img src="sparkle.gif" class="decor" alt="sparkle">
+    <br>
+    <iframe
+      class="live-frame"
+      src="https://vdo.ninja/?view=83UcYqA&cleanoutput&autostart&mute"
+      frameborder="0"
+      allow="camera; microphone; autoplay"
+      allowfullscreen>
+    </iframe>
+    <br>
+    <img src="sparkle.gif" class="decor" alt="sparkle">
+  </div>
+
+  <center>
+    <img src="BLUELINE.gif" class="decor" alt="divider">
+  </center>
 </body>
 </html>
